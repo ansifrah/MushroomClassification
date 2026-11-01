@@ -2,6 +2,7 @@ import csv
 from pathlib import Path
 
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.impute import SimpleImputer
 from sklearn.metrics import classification_report, confusion_matrix, recall_score
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
@@ -22,7 +23,7 @@ FEATURE_NAMES = [
 
 
 def read_data():
-    """Read the comma-separated UCI file; '?' is kept as a category."""
+    """Read the comma-separated UCI file; '?' marks a missing feature value."""
     features, labels = [], []
     with DATA_FILE.open("r", newline="", encoding="utf-8") as data_file:
         for line_number, row in enumerate(csv.reader(data_file), start=1):
@@ -41,10 +42,12 @@ def make_models():
     """Build two classifiers that can work directly with category codes."""
     return {
         "Decision Tree": make_pipeline(
+            SimpleImputer(missing_values="?", strategy="most_frequent"),
             OneHotEncoder(handle_unknown="ignore"),
             DecisionTreeClassifier(random_state=42, class_weight="balanced"),
         ),
         "Random Forest": make_pipeline(
+            SimpleImputer(missing_values="?", strategy="most_frequent"),
             OneHotEncoder(handle_unknown="ignore"),
             RandomForestClassifier(
                 n_estimators=200,
